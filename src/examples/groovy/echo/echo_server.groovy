@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 
-import org.nodex.groovy.core.Nodex
-import org.nodex.groovy.core.net.NetServer
-
 println("Creating echo server")
 
 nodex {
-  new NetServer (
+  netServer (
     onConnect: { connection ->
       connection.dataHandler { data ->
         println "Got data: ${data}"

@@ -1,0 +1,41 @@
+Node.x Groovy Examples
+=======================
+
+Prerequisites:
+
+1) The bin directory from the distro must be on your PATH - this should have been done as part of the install procedure.
+
+2) Groovy must be installed and the bin directory on your PATH as per the Groovy installation instructions
+
+3) JDK/JRE 1.7.0+ must be installed and the JDK/JRE bin directory must be on your PATH
+
+Run an example by invoking:
+
+nodex-groovy <example groovy script>
+
+where <example groovy script> is, for example, echo/echo_server.rb
+
+There now follows a description of all the available examples:
+
+Echo Server + Client
+====================
+
+A simple echo server which echos back any sent to it
+
+To run the server:
+
+nodex-groovy echo/echo_server.groovy
+
+Then either telnet localhost 8080 and notice how text entered via telnet is echoed back
+
+Fanout Server
+=============
+
+Fans out all data received on any one connection to all other connections.
+
+To run the server:
+
+nodex-groovy fanout/fanout_server.groovy
+
+Then telnet localhost 8080 from different consoles. Note how data entered in telnet is echoed to all connected connections
+

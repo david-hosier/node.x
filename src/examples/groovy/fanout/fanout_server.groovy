@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-import org.nodex.groovy.core.Nodex
-import org.nodex.groovy.core.net.NetServer
 import org.nodex.java.core.shared.SharedData
 
 println("Creating fanout server")
 
 nodex {
   def connections = SharedData.getSet("conns")
-  new NetServer (
+  netServer (
     onConnect: { connection ->
       println "Adding handler: ${connection.writeHandlerID}"
       connections << connection.writeHandlerID
