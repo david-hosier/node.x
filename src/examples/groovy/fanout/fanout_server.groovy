@@ -16,15 +16,29 @@
 
 import org.nodex.groovy.core.Nodex
 import org.nodex.groovy.core.net.NetServer
+import org.nodex.java.core.shared.SharedData
 
-println("Creating echo server")
+println("Creating fanout server")
 
 nodex {
+  def connections = SharedData.getSet("conns")
   new NetServer (
     onConnect: { connection ->
+      println "Adding handler: ${connection.writeHandlerID}"
+      connections << connection.writeHandlerID
+
       connection.dataHandler { data ->
-        println "Got data: ${data}"
-        connection.write data
+        if (data) {
+          println "Got data: ${data}"
+          connections.each { id ->
+            sendToHandler(id, data)
+          }
+        }
+      }
+      
+      connection.closedHandler {
+        println "Removing handler: ${connection.writeHandlerID}"
+        connections -= connection.writeHandlerID
       }
     }
   ).listen(8080)
@@ -32,3 +46,4 @@ nodex {
 
 println("Hit enter to exit")
 System.in.read()
+

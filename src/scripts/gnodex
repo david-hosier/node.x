@@ -1,0 +1,12 @@
+#!/usr/bin/env groovy
+
+import org.codehaus.groovy.control.*
+
+if (args) {
+  def conf = new CompilerConfiguration()
+  conf.setScriptBaseClass("org.nodex.groovy.NodexScript")
+  def shell = new GroovyShell(conf)
+  shell.evaluate(new File(args[0]))
+} else {
+  println "Usage: gnodex <script>"
+}

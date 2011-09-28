@@ -16,33 +16,37 @@
 
 package org.nodex.groovy.core.net
 
-public class NetServer {
+class NetSocket {
 
-  def jServer
+  def jSocket
 
-  NetServer() {
-    jServer = new org.nodex.java.core.net.NetServer()
+  NetSocket(jSocket) {
+    this.jSocket = jSocket
   }
-  
-  NetServer(args) {
-    jServer = new org.nodex.java.core.net.NetServer()
-    if (args.onConnect) {
-      connectHandler(args.onConnect)
+
+  def getWriteHandlerID() {
+    return jSocket.writeHandlerID
+  }
+
+  def dataHandler(hndlr) {
+    jSocket.dataHandler(wrapHandler(hndlr))
+  }
+
+  def closedHandler(hndlr) {
+    jSocket.closedHandler(wrapHandler(hndlr))
+  }
+
+  def write(buff) {
+    jSocket.write(buff)
+  }
+
+  // Wrap the Groovy closure in a an anonymous class so the java core can call it
+  def wrapHandler(hndlr) {
+    return new org.nodex.java.core.Handler() {
+	  void handle(data) {
+	    hndlr.call(data)
+	  }
     }
-  }
-  
-  def connectHandler(hndlr) {
-    // Wrap the Groovy closure in a an anonymous class so the java core can call it
-    def gHandler = new org.nodex.java.core.Handler() {
-      void handle(jSocket) {
-        hndlr.call(new NetSocket(jSocket))
-      }
-    }
-    jServer.connectHandler(gHandler)
-  }
-
-  def listen(int port) {
-    jServer.listen(port)
   }
 
 }
