@@ -16,7 +16,7 @@
 
 import org.nodex.java.core.shared.SharedData
 
-println("Creating fanout server")
+println "Creating fanout server"
 
 nodex {
   def connections = SharedData.getSet("conns")
@@ -42,6 +42,6 @@ nodex {
   ).listen(8080)
 }
 
-println("Hit enter to exit")
+println "Hit enter to exit"
 System.in.read()
 

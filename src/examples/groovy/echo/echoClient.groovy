@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-println "Creating echo server"
+println "Creating echo client"
 
 nodex {
-	netClient().connect(8080) { connection ->
-		connection.dataHandler { data -> println "Echo client received ${data}" }
-		(1..10).each { i ->
-			str = "hello ${i}\n"
-			println "Echo client sending: ${str}"
-			connection.writeBuffer(str.buffer())
-		}
-	}
+  netClient().connect(8080) { connection ->
+    connection.dataHandler { data -> println "Echo client received ${data}" }
+    (1..10).each { i ->
+      str = "hello ${i}\n"
+      println "Echo client sending: ${str}"
+      connection.writeBuffer(str.buffer())
+    }
+  }
 }
 
 println "Hit enter to exit"

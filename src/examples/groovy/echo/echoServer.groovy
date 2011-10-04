@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-println("Creating echo server")
+println "Creating echo server"
 
 /* I think I like the uncommented style better since
  * it more closely matches the style used by NetClient
@@ -30,12 +30,12 @@ nodex {
 */
 nodex {
   netServer().listen(8080) { connection ->
-		connection.dataHandler { data ->
-			connection << data
-		}
-	}
+    connection.dataHandler { data ->
+      connection << data
+    }
+  }
 }
 
 
-println("Hit enter to exit")
+println "Hit enter to exit"
 System.in.read()
