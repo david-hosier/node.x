@@ -19,17 +19,18 @@ package org.nodex.groovy
 import org.nodex.groovy.core.Nodex
 import org.nodex.groovy.core.net.*
 import org.nodex.groovy.core.buffer.Buffer
+import org.nodex.java.core.logging.Logger
 
 abstract class NodexScript extends Script {
 
-	Nodex defaultNodex = new Nodex()
-	
-	static {
-		String.metaClass.buffer = { encoding -> Buffer.create(delegate,encoding) }
-		String.metaClass.buffer = { -> Buffer.create(delegate) }
-		GString.metaClass.buffer = { encoding -> Buffer.create(delegate,encoding) }
-		GString.metaClass.buffer = { -> Buffer.create(delegate) }
-	}
+  Nodex defaultNodex = new Nodex()
+  
+  static {
+    String.metaClass.buffer = { encoding -> Buffer.create(delegate,encoding) }
+    String.metaClass.buffer = { -> Buffer.create(delegate) }
+    GString.metaClass.buffer = { encoding -> Buffer.create(delegate,encoding) }
+    GString.metaClass.buffer = { -> Buffer.create(delegate) }
+  }
 
   def nodex(closure) {
     Nodex.go closure
@@ -40,18 +41,19 @@ abstract class NodexScript extends Script {
   }
   
   def registerHandler(handler) {
-  	defaultNodex.registerHandler(handler)
+    defaultNodex.registerHandler(handler)
   }
   
   def unregisterHandler(id) {
-		defaultNodex.unregisterHandler(id)
-	}
+    defaultNodex.unregisterHandler(id)
+  }
   
   def netServer(args) {
     new NetServer(args)
   }
   
   def netClient() {
-  	new NetClient()
+    new NetClient()
   }
+  
 }

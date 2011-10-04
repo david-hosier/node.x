@@ -20,26 +20,24 @@ println "Creating fanout server"
 
 nodex {
   def connections = SharedData.getSet("conns")
-  netServer (
-    onConnect: { connection ->
-      println "Adding handler: ${connection.writeHandlerID}"
-      connections << connection.writeHandlerID
+  netServer().listen(8080) { connection ->
+    println "Adding handler: ${connection.writeHandlerID}"
+    connections << connection.writeHandlerID
 
-      connection.dataHandler { data ->
-        if (data) {
-          println "Got data: ${data}"
-          connections.each { id ->
-            sendToHandler(id, data)
-          }
+    connection.dataHandler { data ->
+      if (data) {
+        println "Got data: ${data}"
+        connections.each { id ->
+          sendToHandler(id, data)
         }
       }
-      
-      connection.closedHandler {
-        println "Removing handler: ${connection.writeHandlerID}"
-        connections -= connection.writeHandlerID
-      }
     }
-  ).listen(8080)
+    
+    connection.closedHandler {
+      println "Removing handler: ${connection.writeHandlerID}"
+      connections -= connection.writeHandlerID
+    }
+  }
 }
 
 println "Hit enter to exit"
