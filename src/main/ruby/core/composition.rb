@@ -70,6 +70,7 @@ module Nodex
     def handler(proc = nil, &hndlr)
       hndlr = proc if proc
       @j_del.handler{ |j_def| hndlr.call(self) }
+      self
     end
 
     # @private
@@ -161,7 +162,6 @@ module Nodex
     end
 
   end
-
 
   # Composer allows asynchronous control flows to be defined.
   #

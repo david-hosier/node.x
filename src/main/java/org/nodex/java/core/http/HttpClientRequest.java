@@ -27,6 +27,7 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.nodex.java.core.Handler;
 import org.nodex.java.core.buffer.Buffer;
+import org.nodex.java.core.logging.Logger;
 import org.nodex.java.core.streams.WriteStream;
 
 import java.util.LinkedList;
@@ -74,6 +75,8 @@ import java.util.Map;
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
 public class HttpClientRequest implements WriteStream {
+
+  private static final Logger log = Logger.getLogger(HttpClient.class);
 
   HttpClientRequest(final HttpClient client, final String method, final String uri,
                     final Handler<HttpClientResponse> respHandler,
@@ -305,6 +308,33 @@ public class HttpClientRequest implements WriteStream {
   }
 
   /**
+   * Same as {@link #end(Buffer)} but writes a String with the default encoding
+   */
+  public void end(String chunk) {
+    end(Buffer.create(chunk));
+  }
+
+  /**
+   * Same as {@link #end(Buffer)} but writes a String with the specified encoding
+   */
+  public void end(String chunk, String enc) {
+    end(Buffer.create(chunk, enc));
+  }
+
+  /**
+   * Same as {@link #end()} but writes some data to the request body before ending. If the request is not chunked and
+   * no other data has been written then the Content-Length header will be automatically set
+   */
+  public void end(Buffer chunk) {
+    if (!chunked && contentLength == 0) {
+      contentLength = chunk.length();
+      request.setHeader(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(contentLength));
+    }
+    write(chunk);
+    end();
+  }
+
+  /**
    * Ends the request. If no data has been written to the request body, and {@link #sendHead()} has not been called then
    * the actual request won't get written until this method gets called.<p>
    * Once the request has ended, it cannot be used any more, and if keep alive is true the underlying connection will
@@ -339,7 +369,7 @@ public class HttpClientRequest implements WriteStream {
     if (exceptionHandler != null) {
       exceptionHandler.handle(e);
     } else {
-      e.printStackTrace(System.err);
+      log.error(e);
     }
   }
 
@@ -356,7 +386,7 @@ public class HttpClientRequest implements WriteStream {
       if (t instanceof Exception) {
         handleException((Exception) t);
       } else {
-        t.printStackTrace(System.err);
+        log.error(t);
       }
     }
   }

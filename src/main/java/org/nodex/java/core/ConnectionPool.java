@@ -17,25 +17,24 @@
 package org.nodex.java.core;
 
 import org.nodex.java.core.internal.NodexInternal;
+import org.nodex.java.core.logging.Logger;
 
+import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * <p>A simple, non-blocking pool implementation</p>
- *
- * <p>TODO the implementation can be improved. Currently it uses synchronization which may cause
- * contention issues under high load. Consider replacing with lock-free algorithm.</p>
  *
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
 public abstract class ConnectionPool<T> {
 
-  private final Queue<T> available = new ConcurrentLinkedQueue<>();
+  private static final Logger log = Logger.getLogger(ConnectionPool.class);
+
+  private final Queue<T> available = new LinkedList<>();
   private int maxPoolSize = 1;
-  private final AtomicInteger connectionCount = new AtomicInteger(0);
-  private final Queue<Waiter> waiters = new ConcurrentLinkedQueue<>();
+  private int connectionCount;
+  private final Queue<Waiter> waiters = new LinkedList<>();
 
   /**
    * Set the maximum pool size to the value specified by {@code maxConnections}<p>
@@ -52,62 +51,87 @@ public abstract class ConnectionPool<T> {
     return maxPoolSize;
   }
 
+  public synchronized void report() {
+    log.trace("available: " + available.size() + " connection count: " + connectionCount + " waiters: " + waiters.size());
+  }
+
   /**
    * Get a connection from the pool. The connection is returned in the handler, some time in the future if a
    * connection becomes available.
    * @param handler The handler
    * @param contextID The context id
    */
-  public synchronized void getConnection(Handler<T> handler, long contextID) {
-    T conn = available.poll();
+  public void getConnection(Handler<T> handler, long contextID) {
+    boolean connect = false;
+    T conn;
+    outer: synchronized (this) {
+      conn = available.poll();
+      if (conn != null) {
+        break outer;
+      } else {
+        if (connectionCount < maxPoolSize) {
+          //Create new connection
+          connect = true;
+          connectionCount++;
+          break outer;
+        }
+        // Add to waiters
+        waiters.add(new Waiter(handler, contextID));
+      }
+    }
+    // We do this outside the sync block to minimise the critical section
     if (conn != null) {
       handler.handle(conn);
-    } else {
-      if (connectionCount.get() < maxPoolSize) {
-        if (connectionCount.incrementAndGet() <= maxPoolSize) {
-          //Create new connection
-          connect(handler, contextID);
-          return;
-        } else {
-          connectionCount.decrementAndGet();
-        }
-      }
-      // Add to waiters
-      waiters.add(new Waiter(handler, contextID));
+    }
+    else if (connect) {
+      connect(handler, contextID);
     }
   }
 
   /**
    * Inform the pool that the connection has been closed externally.
    */
-  public synchronized void connectionClosed() {
-    if (connectionCount.decrementAndGet() < maxPoolSize) {
-      //Now the connection count has come down, maybe there is another waiter that can
-      //create a new connection
-      Waiter waiter = waiters.poll();
-      if (waiter != null) {
-        getConnection(waiter.handler, waiter.contextID);
+  public void connectionClosed() {
+    Waiter waiter;
+    synchronized (this) {
+      connectionCount--;
+      if (connectionCount < maxPoolSize) {
+        //Now the connection count has come down, maybe there is another waiter that can
+        //create a new connection
+        waiter = waiters.poll();
+        if (waiter != null) {
+          connectionCount++;
+        }
+      } else {
+        waiter = null;
       }
+    }
+    // We do the actual connect outside the sync block to minimise the critical section
+    if (waiter != null) {
+      connect(waiter.handler, waiter.contextID);
     }
   }
 
   /**
    * Return a connection to the pool so it can be used by others.
    */
-  public synchronized void returnConnection(final T conn) {
-
-    //Return it to the pool
-    final Waiter waiter = waiters.poll();
-
+  public void returnConnection(final T conn) {
+    Waiter waiter;
+    synchronized (this) {
+      //Return it to the pool
+      waiter = waiters.poll();
+      if (waiter == null) {
+        available.add(conn);
+      }
+    }
     if (waiter != null) {
-      NodexInternal.instance.executeOnContext(waiter.contextID, new Runnable() {
+      final Waiter w = waiter;
+      NodexInternal.instance.executeOnContext(w.contextID, new Runnable() {
         public void run() {
-          NodexInternal.instance.setContextID(waiter.contextID);
-          waiter.handler.handle(conn);
+          NodexInternal.instance.setContextID(w.contextID);
+          w.handler.handle(conn);
         }
       });
-    } else {
-      available.add(conn);
     }
   }
 

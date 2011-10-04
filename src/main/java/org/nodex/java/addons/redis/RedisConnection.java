@@ -16,7 +16,12 @@
 
 package org.nodex.java.addons.redis;
 
-import org.nodex.java.core.*;
+import org.nodex.java.core.ConnectionPool;
+import org.nodex.java.core.Deferred;
+import org.nodex.java.core.DeferredAction;
+import org.nodex.java.core.Future;
+import org.nodex.java.core.Handler;
+import org.nodex.java.core.SimpleHandler;
 import org.nodex.java.core.buffer.Buffer;
 import org.nodex.java.core.internal.NodexInternal;
 
@@ -50,7 +55,7 @@ import java.util.Map;
  *
  * <pre>
  * final RedisConnection conn = pool.connection();
- * client.set(Buffer.create("key1"), Buffer.create("value1").handler(new CompletionHandler() {
+ * conn.set(Buffer.create("key1"), Buffer.create("value1").handler(new CompletionHandler() {
  *   public void handle(Future&lt;Void&gt; f) {
  *     System.out.println("The value has been successfully set");
  *     conn.close();
@@ -67,9 +72,13 @@ import java.util.Map;
  * comp.parallel(conn.set(Buffer.create("key2"), Buffer.create("value2")));
  * Future&lt;Buffer&gt; result1 = comp.series(conn.get(Buffer.create("key1")));
  * Future&lt;Buffer&gt; result2 = comp.parallel(conn.get(Buffer.create("key2")));
- * comp.series(new SimpleAction() {
- *   protected void act() {
- *     conn.set(Buffer.create("key3"), Buffer.create(result1.result + result2.result));
+ * comp.series(new DeferredAction&lt;Void&gt;() {
+ *   protected void run() {
+ *     conn.set(Buffer.create("key3"), Buffer.create(result1.result + result2.result)).handler(new SimpleHandler() {
+ *       public void handle() {
+ *         DeferredAction.this.setResult(null);
+ *       }
+ *     }
  *   }
  * }
  * comp.parallel(conn.closeDeferred());
@@ -235,8 +244,8 @@ public class RedisConnection {
   }
 
   /**
-   * Close the file asynchronously.<p>
-   * This method must be called using the same event loop the file was opened from.
+   * Close the connection asynchronously.<p>
+   * This method must be called using the same event loop the connection was opened from.
    * @return a Future representing the future result of closing the file.
    */
   public Future<Void> close() {
@@ -277,8 +286,8 @@ public class RedisConnection {
   }
 
   void addToPending(RedisDeferred<?> deferred) {
-    getConnection();
     pending.add(deferred);
+    getConnection();
   }
 
   public Deferred<Integer> append(Buffer key, Buffer value) {
@@ -335,7 +344,6 @@ public class RedisConnection {
   public Deferred<Integer> del(Buffer... keys) {
     return createIntegerDeferred(DEL_COMMAND, keys);
   }
-
 
   public Deferred<Void> discard() {
     RedisDeferred<Void> deferred = createVoidDeferred(DISCARD_COMMAND);
@@ -903,7 +911,7 @@ public class RedisConnection {
     return new RedisDeferred<Void>(RedisDeferred.DeferredType.VOID, this) {
       public void run() {
         final Buffer buff = createCommand(command, channels);
-        rc.conn.sendRequest(this, buff, true, contextID);
+        sendRequest(this, buff, true, contextID);
       }
       public void handleReply(RedisReply reply) {
         rc.conn.subscribe(contextID);
@@ -916,7 +924,7 @@ public class RedisConnection {
     final Buffer buff = createCommand(command, channels);
     return new RedisDeferred<Void>(RedisDeferred.DeferredType.VOID, this) {
       public void run() {
-        rc.conn.sendRequest(this, buff, true, contextID);
+        sendRequest(this, buff, true, contextID);
       }
       public void handleReply(RedisReply reply) {
         int num = reply.intResult;
@@ -953,7 +961,7 @@ public class RedisConnection {
     return new RedisDeferred<Double>(RedisDeferred.DeferredType.DOUBLE, this) {
       public void run() {
         Buffer buff = createCommand(command, args);
-        rc.conn.sendRequest(this, buff, contextID);
+        sendRequest(this, buff, contextID);
       }
     };
   }
@@ -962,7 +970,7 @@ public class RedisConnection {
     return new RedisDeferred<Integer>(RedisDeferred.DeferredType.INTEGER, this) {
       public void run() {
         Buffer buff = createCommand(command, args);
-        rc.conn.sendRequest(this, buff, contextID);
+        sendRequest(this, buff, contextID);
       }
     };
   }
@@ -971,7 +979,7 @@ public class RedisConnection {
     return new RedisDeferred<Void>(RedisDeferred.DeferredType.VOID, this) {
       public void run() {
         Buffer buff = createCommand(command, args);
-        rc.conn.sendRequest(this, buff, contextID);
+        sendRequest(this, buff, contextID);
       }
     };
   }
@@ -980,7 +988,7 @@ public class RedisConnection {
     return new RedisDeferred<String>(RedisDeferred.DeferredType.STRING, this) {
       public void run() {
         Buffer buff = createCommand(command, args);
-        rc.conn.sendRequest(this, buff, contextID);
+        sendRequest(this, buff, contextID);
       }
     };
   }
@@ -989,7 +997,7 @@ public class RedisConnection {
     return new RedisDeferred<Boolean>(RedisDeferred.DeferredType.BOOLEAN, this) {
       public void run() {
         Buffer buff = createCommand(command, args);
-        rc.conn.sendRequest(this, buff, contextID);
+        sendRequest(this, buff, contextID);
       }
     };
   }
@@ -998,7 +1006,7 @@ public class RedisConnection {
     return new RedisDeferred<Buffer>(RedisDeferred.DeferredType.BULK, this) {
       public void run() {
         Buffer buff = createCommand(command, args);
-        rc.conn.sendRequest(this, buff, contextID);
+        sendRequest(this, buff, contextID);
       }
     };
   }
@@ -1007,9 +1015,17 @@ public class RedisConnection {
     return new RedisDeferred<Buffer[]>(RedisDeferred.DeferredType.MULTI_BULK, this) {
       public void run() {
         Buffer buff = createCommand(command, args);
-        conn.sendRequest(this, buff, contextID);
+        sendRequest(this, buff, contextID);
       }
     };
+  }
+
+  private void sendRequest(final RedisDeferred<?> deferred, final Buffer buffer, long contextID) {
+    sendRequest(deferred, buffer, false, contextID);
+  }
+
+  private void sendRequest(final RedisDeferred<?> deferred, final Buffer buffer, boolean subscribe, long contextID) {
+    conn.sendRequest(deferred, buffer, subscribe, contextID);
   }
 
   private Buffer[] toBufferArray(Buffer[] buffers, Buffer... others) {
@@ -1075,6 +1091,12 @@ public class RedisConnection {
 
   private void setConnection(InternalConnection conn) {
     this.conn = conn;
+    conn.closedHandler(new SimpleHandler() {
+      public void handle() {
+        RedisConnection.this.conn = null;
+        connectionRequested = false;
+      }
+    });
     if (password != null) {
       auth(Buffer.create(password)).execute();
     }

@@ -18,6 +18,7 @@ package org.nodex.java.addons.redis;
 
 import org.nodex.java.core.ConnectionPool;
 import org.nodex.java.core.Handler;
+import org.nodex.java.core.logging.Logger;
 import org.nodex.java.core.net.NetClient;
 import org.nodex.java.core.net.NetSocket;
 
@@ -26,10 +27,14 @@ import org.nodex.java.core.net.NetSocket;
  * {@link RedisConnection} instances via the {@link #connection} method. Once a RedisConnection has been done
  * with, the {@link RedisConnection#close} method should be called to return it's underlying TCP connection to
  * the pool.</p>
+ * <p>If Redis authentication is enabled on the server, a password should be set using the {@link #setPassword}
+ * method.</p>
  *
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
 public class RedisPool {
+
+  private static final Logger log = Logger.getLogger(RedisPool.class);
 
   private final NetClient client = new NetClient();
   private final ConnectionPool<InternalConnection> pool = new ConnectionPool<InternalConnection>() {
@@ -42,7 +47,18 @@ public class RedisPool {
   private String password;
 
   /**
-   * Set the port that the client will attempt to connect to on the server to {@code port}. The default value is {@code 80}<p>
+   * Create a new RedisPool
+   */
+  public RedisPool() {
+    client.exceptionHandler(new Handler<Exception>() {
+      public void handle(Exception e) {
+        log.error("Failed to connect", e);
+      }
+    });
+  }
+
+  /**
+   * Set the port that the client will attempt to connect to on the server to {@code port}. The default value is {@code 6379}<p>
    * @return A reference to this, so multiple invocations can be chained together.
    */
   public RedisPool setPort(int port) {
@@ -60,8 +76,8 @@ public class RedisPool {
   }
 
   /**
-   * Set the maximum pool size to the value specified by {@code maxConnections}<p>
-   * The client will maintain up to {@code maxConnections} HTTP connections in an internal pool<p>
+   * Set the maximum pool size <p>
+   * The pool will maintain up to this number of Redis connections in an internal pool<p>
    * @return A reference to this, so multiple invocations can be chained together.
    */
   public RedisPool setMaxPoolSize(int maxConnections) {

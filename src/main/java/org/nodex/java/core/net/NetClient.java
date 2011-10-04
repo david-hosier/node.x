@@ -38,6 +38,7 @@ import org.nodex.java.core.Handler;
 import org.nodex.java.core.Nodex;
 import org.nodex.java.core.buffer.Buffer;
 import org.nodex.java.core.internal.NodexInternal;
+import org.nodex.java.core.logging.Logger;
 
 import javax.net.ssl.SSLEngine;
 import java.net.InetSocketAddress;
@@ -53,6 +54,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
 public class NetClient extends NetClientBase {
+
+  private static final Logger log = Logger.getLogger(NetClient.class);
 
   private ClientBootstrap bootstrap;
   private NioClientSocketChannelFactory channelFactory;
@@ -121,11 +124,14 @@ public class NetClient extends NetClientBase {
             }
           });
         } else {
+
+          // TODO - set a timer for reconnection attempts
+
           Throwable t = channelFuture.getCause();
           if (t instanceof Exception && exceptionHandler != null) {
             exceptionHandler.handle((Exception) t);
           } else {
-            t.printStackTrace(System.err);
+            log.error(t);
           }
         }
       }
