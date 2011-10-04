@@ -14,18 +14,33 @@
  * limitations under the License.
  */
 
-println("Creating echo server")
+package org.nodex.groovy.core.net
 
-nodex {
-  netServer (
-    onConnect: { connection ->
-      connection.dataHandler { data ->
-        println "Got data: ${data}"
-        connection.write data
-      }
-    }
-  ).listen(8080)
+public class SSLSupport {
+
+  def setSSL(ssl) {
+    jDelegate.setSSL(ssl)
+    return this
+  }
+  
+  def setKeyStorePath(path) {
+    jDelegate.setKeyStorePath(path)
+    return this
+  }
+  
+  def setKeyStorePassword(password) {
+    jDelegate.setKeyStorePassword(password)
+    return this
+  }
+  
+  def setTrustStorePath(path) {
+    jDelegate.setTrustStorePath(path)
+    return this
+  }
+  
+  def setTrustStorePassword(password) {
+    jDelegate.setTrustStorePassword(password)
+    return this
+  }
+
 }
-
-println("Hit enter to exit")
-System.in.read()

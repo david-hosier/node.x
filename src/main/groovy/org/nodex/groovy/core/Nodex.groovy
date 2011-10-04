@@ -18,14 +18,50 @@ package org.nodex.groovy.core
 
 class Nodex {
 
-  static def j_instance = org.nodex.java.core.Nodex.instance
+  static def jDelegate = org.nodex.java.core.Nodex.instance
   
+  /**
+   * Run the specified Closure inside an event loop. 
+   * An event loop will be picked by the system from all available loops.
+   */
   static def go(closure) {
-    j_instance.go(new java.lang.Runnable() {
+    jDelegate.go(new java.lang.Runnable() {
       public void run() {
         closure.call()
       }
     })
   }
 
+  /**
+   * Send a message to the handler with the specified {@code actorID}. This can be called from any event loop.
+   * @return true of the message was successfully sent, or false if no such handler exists.
+   */
+  def sendToHandler(actorID, message) {
+    jDelegate.sendToHandler(actorID, message)
+  }
+
+  /**
+   * Register a global handler with the system. The handler can be invoked by calling the {@link #sendToHandler}
+   * method from any event loop. The handler will always be called on the event loop that invoked the {@code
+   * registerHandler} method.
+   * @param handler a Closure to register as a Handler
+   * @return the unique ID of the handler. This is required when calling {@link #sendToHandler}.
+   */
+  def registerHandler(handler) {
+    def jHandler = new org.nodex.java.core.Handler() {
+      void handle(data) {
+        handler.call(data)
+      }
+    }
+  	jDelegate.registerHandler(jHandler)
+  }
+
+  /**
+   * Unregister the handler with the specified {@code id}. This must be called from the same event loop that
+   * registered the handler.
+   * @return true if the handler was successfully unregistered, otherwise false if the handler cannot be found.
+   */
+  def unregisterHandler(id) {
+		jDelegate.unregisterHandler(id)
+	}
 }

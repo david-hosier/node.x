@@ -18,12 +18,16 @@ package org.nodex.groovy.core.net
 
 class NetSocket {
 
-  def jSocket
+  @Delegate org.nodex.java.core.net.NetSocket jSocket
 
   NetSocket(jSocket) {
     this.jSocket = jSocket
   }
 
+  /*
+   * The java NetSocket class does not have getWriteHandlerID()
+   * method, so it is not added to this class via the @Delegate
+   */
   def getWriteHandlerID() {
     return jSocket.writeHandlerID
   }
@@ -36,8 +40,16 @@ class NetSocket {
     jSocket.closedHandler(wrapHandler(hndlr))
   }
 
-  def write(buff) {
-    jSocket.write(buff)
+  /*
+   * This allows us to use the construct:
+   *    socket << data << data << data
+   *
+   * By returning "this", we can chain the calls
+   */
+  def leftShift(buff) {
+  	if (buff instanceof GString) { write(buff.toString()) }
+  	else { write(buff) }
+    return this
   }
 
   // Wrap the Groovy closure in a an anonymous class so the java core can call it
