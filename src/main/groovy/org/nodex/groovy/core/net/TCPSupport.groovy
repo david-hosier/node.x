@@ -16,36 +16,69 @@
 
 package org.nodex.groovy.core.net
 
+/**
+ * Mixin module that provides all the common TCP params that can be set.
+ */
 public class TCPSupport {
 
+  /**
+   * Set the TCP send buffer size.
+   * @param size The size in bytes.
+   * @return A reference to self so invocations can be chained
+   */
   def setSendBufferSize(size) {
     jDelegate.setSendBufferSize(size)
-    return this
+    return me
   }
 
+  /**
+   * Set the TCP receive buffer size.
+   * @param size The size in bytes.
+   * @return A reference to self so invocations can be chained
+   */
   def setReceiveBufferSize(size) {
     jDelegate.setReceiveBufferSize(size)
-    return this
+    return me
   }
   
+  /**
+   * Set the TCP keep alive setting.
+   * @param keepAlive If true, then TCP keep alive will be enabled.
+   * @return A reference to self so invocations can be chained
+   */
   def setTCPKeepAlive(keepAlive) {
     jDelegate.setTCPKeepAlive(keepAlive)
-    return this
+    return me
   }
   
+  /**
+   * Set the TCP reuse address setting.
+   * @param reuse If true, then TCP reuse address will be enabled.
+   * @return A reference to self so invocations can be chained
+   */
   def setReuseAddress(reuse) {
     jDelegate.setReuseAddress(reuse)
-    return this
+    return me
   }
   
+  /**
+   * Set the TCP so linger setting.
+   * @param soLinger If true, then TCP so linger will be enabled.
+   * @return A reference to self so invocations can be chained
+   */
   def setSoLinger(soLinger) {
     jDelegate.setSoLinger(soLinger)
-    return this
+    return me
   }
   
+  /**
+   * Set the TCP traffic class setting.
+   * @param trafficClass The TCP traffic class setting.
+   * @return A reference to self so invocations can be chained
+   */
   def setTrafficClass(trafficClass) {
     jDelegate.setTrafficClass(trafficClass)
-    return this
+    return me
   }
 
 }

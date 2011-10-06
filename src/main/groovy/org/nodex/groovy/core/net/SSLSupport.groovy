@@ -16,31 +16,47 @@
 
 package org.nodex.groovy.core.net
 
+/**
+ * Mixin module that provides all the common SSL params that can be set.
+ */
 public class SSLSupport {
 
+  /**
+   * Set whether the server or client will use SSL.
+   * @param ssl If true then ssl will be used.
+   * @return self So multiple invocations can be chained.
+   */
   def setSSL(ssl) {
     jDelegate.setSSL(ssl)
-    return this
+    return me
   }
   
+  /**
+   * Set the path to the SSL key store. This method should only be used with the client/server in SSL mode, i.e. after {#ssl=}
+   * has been set to true.
+   * The SSL key store is a standard Java Key Store, and should contain the client/server certificate. For a client, it's only necessary to supply
+   * a client key store if the server requires client authentication via client certificates.
+   * @param [String] val. The path to the key store
+   * @return [] self. So multiple invocations can be chained.
+   */
   def setKeyStorePath(path) {
     jDelegate.setKeyStorePath(path)
-    return this
+    return me
   }
   
   def setKeyStorePassword(password) {
     jDelegate.setKeyStorePassword(password)
-    return this
+    return me
   }
   
   def setTrustStorePath(path) {
     jDelegate.setTrustStorePath(path)
-    return this
+    return me
   }
   
   def setTrustStorePassword(password) {
     jDelegate.setTrustStorePassword(password)
-    return this
+    return me
   }
 
 }

@@ -19,6 +19,12 @@ package org.nodex.groovy.core
 class Nodex {
 
   static def jDelegate = org.nodex.java.core.Nodex.instance
+  static {
+    String.metaClass.buffer = { encoding -> org.nodex.groovy.core.buffer.Buffer.create(delegate,encoding) }
+    String.metaClass.buffer = { -> org.nodex.groovy.core.buffer.Buffer.create(delegate) }
+    GString.metaClass.buffer = { encoding -> org.nodex.groovy.core.buffer.Buffer.create(delegate,encoding) }
+    GString.metaClass.buffer = { -> org.nodex.groovy.core.buffer.Buffer.create(delegate) }
+  }
   
   /**
    * Run the specified Closure inside an event loop. 
@@ -36,7 +42,7 @@ class Nodex {
    * Send a message to the handler with the specified {@code actorID}. This can be called from any event loop.
    * @return true of the message was successfully sent, or false if no such handler exists.
    */
-  def sendToHandler(actorID, message) {
+  static def sendToHandler(actorID, message) {
     jDelegate.sendToHandler(actorID, message)
   }
 
@@ -47,13 +53,13 @@ class Nodex {
    * @param handler a Closure to register as a Handler
    * @return the unique ID of the handler. This is required when calling {@link #sendToHandler}.
    */
-  def registerHandler(handler) {
+  static def registerHandler(handler) {
     def jHandler = new org.nodex.java.core.Handler() {
       void handle(data) {
         handler.call(data)
       }
     }
-  	jDelegate.registerHandler(jHandler)
+    jDelegate.registerHandler(jHandler)
   }
 
   /**
@@ -61,7 +67,7 @@ class Nodex {
    * registered the handler.
    * @return true if the handler was successfully unregistered, otherwise false if the handler cannot be found.
    */
-  def unregisterHandler(id) {
-		jDelegate.unregisterHandler(id)
-	}
+  static def unregisterHandler(id) {
+    jDelegate.unregisterHandler(id)
+  }
 }

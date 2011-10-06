@@ -19,7 +19,7 @@ done
 
 DIRNAME=`dirname "$PRG"`
 
-EXTRA_CLASSPATH="-cp $DIRNAME/../lib/java/node.x.jar:$DIRNAME/../lib/java/netty.jar:$DIRNAME/../lib/java/high-scale-lib.jar"
+EXTRA_CLASSPATH="-cp $DIRNAME/../lib/groovy:$DIRNAME/../lib/java/node.x.jar:$DIRNAME/../lib/java/netty.jar:$DIRNAME/../lib/java/high-scale-lib.jar"
 
 # We need to append the EXTRA_CLASSPATH to any classpath specified on the command line
 
@@ -44,4 +44,4 @@ do
   DISCARD_ARG=false
 done
 
-groovy $EXTRA_CLASSPATH $DIRNAME/gnodex $NEW_ARGS
+groovy $EXTRA_CLASSPATH -Djava.util.logging.config.file=$DIRNAME/../logging.properties $NEW_ARGS

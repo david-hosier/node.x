@@ -13,7 +13,7 @@ Run an example by invoking:
 
 nodex-groovy <example groovy script>
 
-where <example groovy script> is, for example, echo/echo_server.rb
+where <example groovy script> is, for example, echo/echoServer.groovy
 
 There now follows a description of all the available examples:
 
@@ -24,9 +24,13 @@ A simple echo server which echos back any sent to it
 
 To run the server:
 
-nodex-groovy echo/echo_server.groovy
+nodex-groovy echo/echoServer.groovy
 
-Then either telnet localhost 8080 and notice how text entered via telnet is echoed back
+Then telnet localhost 8080 and notice how text entered via telnet is echoed back
+
+Instead of telnet you can also run a simple echo client:
+
+nodex-groovy echo/echoClient.groovy
 
 Fanout Server
 =============
@@ -35,7 +39,23 @@ Fans out all data received on any one connection to all other connections.
 
 To run the server:
 
-nodex-groovy fanout/fanout_server.groovy
+nodex-groovy fanout/fanoutServer.groovy
 
 Then telnet localhost 8080 from different consoles. Note how data entered in telnet is echoed to all connected connections
+
+
+SSL
+===
+
+This is like the echo example, but this time using SSL. Please note that the keystore 
+location in the script assumes the commands are executed from this directory exactly as shown below.
+
+To run the server:
+
+nodex-groovy ssl/sslServer.groovy
+
+To run the client:
+
+nodex-groovy ssl/sslClient.groovy
+
 

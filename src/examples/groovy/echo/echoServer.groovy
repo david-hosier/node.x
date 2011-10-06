@@ -14,28 +14,18 @@
  * limitations under the License.
  */
 
+import org.nodex.groovy.core.Nodex
+import org.nodex.groovy.core.net.NetServer
+
 println "Creating echo server"
 
-/* I think I like the uncommented style better since
- * it more closely matches the style used by NetClient
-nodex {
-  netServer (
-    onConnect: { connection ->
-      connection.dataHandler { data ->
-        connection << data
-      }
-    }
-  ).listen(8080)
-}
-*/
-nodex {
-  netServer().listen(8080) { connection ->
-    connection.dataHandler { data ->
-      connection << data
+Nodex.go {
+  new NetServer().listen(8080) { socket ->
+    socket.dataHandler { data ->
+      socket << data
     }
   }
 }
-
 
 println "Hit enter to exit"
 System.in.read()

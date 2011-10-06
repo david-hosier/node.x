@@ -20,14 +20,13 @@ import org.nodex.java.core.buffer.Buffer
 
 public class Buffer {
 
-	@Delegate org.nodex.java.core.buffer.Buffer jBuffer
+  @Delegate org.nodex.java.core.buffer.Buffer jBuffer
 
-	/**
-	 * Creates a nodex Java Buffer from either a String or a GString and returns it.
-	 */
-	def static create(str, encoding = "UTF-8") {
-//		org.nodex.java.core.buffer.Buffer.create(str.toString(), encoding)
-		org.nodex.java.core.buffer.Buffer.create(new String(str), encoding)
-	}
-	
+  /**
+   * Creates a nodex Java Buffer from either a String or a GString and returns it.
+   */
+  def static create(str, encoding = "UTF-8") {
+    org.nodex.java.core.buffer.Buffer.create(new String(str), encoding)
+  }
+  
 }

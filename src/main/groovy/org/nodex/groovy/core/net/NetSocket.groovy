@@ -39,6 +39,14 @@ class NetSocket {
   def closedHandler(hndlr) {
     jSocket.closedHandler(wrapHandler(hndlr))
   }
+  
+  def drainHandler(hndlr) {
+    jSocket.drainHandler(wrapHandler(hndlr))
+  }
+
+  def endHandler(hndlr) {
+    jSocket.endHandler(wrapHandler(hndlr))
+  }
 
   /*
    * This allows us to use the construct:
@@ -47,17 +55,17 @@ class NetSocket {
    * By returning "this", we can chain the calls
    */
   def leftShift(buff) {
-  	if (buff instanceof GString) { write(buff.toString()) }
-  	else { write(buff) }
+    if (buff instanceof GString) { write(buff.toString()) }
+    else { write(buff) }
     return this
   }
 
   // Wrap the Groovy closure in a an anonymous class so the java core can call it
   def wrapHandler(hndlr) {
     return new org.nodex.java.core.Handler() {
-	  void handle(data) {
-	    hndlr.call(data)
-	  }
+    void handle(data) {
+      hndlr.call(data)
+    }
     }
   }
 

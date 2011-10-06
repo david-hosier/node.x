@@ -21,26 +21,15 @@ import org.nodex.java.core.net.NetServer
 @Mixin([TCPSupport, SSLSupport])
 public class NetServer {
 
-  @Delegate org.nodex.java.core.net.NetServer jDelegate
+  org.nodex.java.core.net.NetServer jDelegate
+  private NetServer me
 
   NetServer() {
     jDelegate = new org.nodex.java.core.net.NetServer()
-  }
-  
-  NetServer(args) {
-    this()
-    /*
-     * This is the code used to specify the connectHandler as a named param
-    if (args) {
-			if (args.onConnect) {
-				connectHandler(args.onConnect)
-			}
-		}
-		*/
+    me = this
   }
   
   def connectHandler(Closure hndlr) {
-    // Wrap the Groovy closure in a an anonymous class so the java core can call it
     def jHandler = new org.nodex.java.core.Handler() {
       void handle(jSocket) {
         hndlr.call(new NetSocket(jSocket))
@@ -56,17 +45,21 @@ public class NetServer {
   }
   
   def listen(port, host = "0.0.0.0", handler) {
-  	connectHandler(handler)
+    connectHandler(handler)
     jDelegate.listen(port, host)
     return this
   }
   
-  def close(Closure hndlr) {
-    def jHandler = new org.nodex.java.core.Handler() {
-      void handle(nada) {
-        hndlr.call()
+  void close(Closure hndlr) {
+    def jHandler = null
+    if (hndlr) {
+      jHandler = new org.nodex.java.core.Handler() {
+        void handle(nada) {
+          hndlr.call()
+        }
       }
     }
     jDelegate.close(jHandler)
   }
+  
 }

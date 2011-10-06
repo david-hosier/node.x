@@ -14,34 +14,23 @@
  * limitations under the License.
  */
 
-import org.nodex.java.core.shared.SharedData
 import org.nodex.groovy.core.Nodex
 import org.nodex.groovy.core.net.NetServer
 
-println "Creating fanout server"
+println "Creating SSL server"
 
 Nodex.go {
-  def connections = SharedData.getSet("conns")
-  new NetServer().listen(8080) { connection ->
-    println "Adding handler: ${connection.writeHandlerID}"
-    connections << connection.writeHandlerID
-
-    connection.dataHandler { data ->
-      if (data) {
-        println "Got data: ${data}"
-        connections.each { id ->
-          Nodex.sendToHandler(id, data)
-        }
-      }
-    }
-    
-    connection.closedHandler {
-      println "Removing handler: ${connection.writeHandlerID}"
-      connections -= connection.writeHandlerID
+  def sslOptions = [
+    SSL: true,
+    keyStorePath: "ssl/server-keystore.jks",
+    keyStorePassword: "wibble"
+  ]
+  new NetServer(sslOptions).listen(4443) { socket ->
+    socket.dataHandler { data ->
+      socket << data
     }
   }
 }
 
 println "Hit enter to exit"
 System.in.read()
-

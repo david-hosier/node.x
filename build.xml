@@ -66,17 +66,23 @@
     <target name="compile-core" depends="init" description="compile the source for the core">
         <mkdir dir="${core-target}"/>
         <javac srcdir="${core-src}" destdir="${core-target}" classpathref="core-lib-classpath" debug="on" includeantruntime="false"/>
-        <copy todir="${core-target}">
-        	<fileset dir="${core-groovy-src}" includes="**/*.groovy" />
-        </copy>
     </target>
 
     <target name="jar-core" depends="compile-core" description="generate the core jar">
-        <jar jarfile="${target}/${jar-file}" basedir="${core-target}" includes="**/*.class,**/*.groovy"/>
+        <jar jarfile="${target}/${jar-file}" basedir="${core-target}" includes="**/*.class"/>
     </target>
     
-    <target name="deploy-core" depends="jar-core">
+    <target name="deploy-groovy" depends="jar-core">
     	<copy file="${target}/${jar-file}" todir="${dist-build}/lib/java"/>
+      <exec executable="cp">
+        <arg value="src/scripts/nodex-groovy"/>
+        <arg value="${dist-build}/bin/nodex-groovy"/>
+      </exec>
+      <copy todir="${dist-build}/lib/groovy">
+        <fileset dir="${core-groovy-src}">
+          <include name="**/*"/>
+        </fileset>
+      </copy>
     </target>
 
     <target name="clean" description="clean up">
@@ -109,6 +115,10 @@
 
     <target name="ruby-tests" depends="compile-tests">
         <exec executable="./run_tests.sh" dir="./src/tests/ruby" failonerror="true"/>
+    </target>
+
+    <target name="groovy-tests" depends="compile-tests">
+        <exec executable="./runTests.sh" dir="./src/tests/groovy" failonerror="true" />
     </target>
 
     <target name="javadoc" depends="compile-core">
@@ -153,7 +163,7 @@
         </copy>
 
         <copy todir="${dist-build}/lib/groovy">
-            <fileset dir="src/main/groovy">
+            <fileset dir="${core-groovy-src}">
                 <include name="**/*.groovy"/>
             </fileset>
         </copy>
@@ -176,10 +186,6 @@
         <exec executable="cp">
             <arg value="src/scripts/nodex-ruby"/>
             <arg value="${dist-build}/bin/nodex-ruby"/>
-        </exec>
-        <exec executable="cp">
-            <arg value="src/scripts/gnodex"/>
-            <arg value="${dist-build}/bin/gnodex"/>
         </exec>
         <exec executable="cp">
             <arg value="src/scripts/nodex-groovy"/>
