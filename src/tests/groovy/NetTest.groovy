@@ -75,7 +75,7 @@ class NetTest extends GroovyTestCase {
 
     }
     
-    assert(latch.await(5, java.util.concurrent.TimeUnit.SECONDS))
+    assert(latch.await(5.seconds))
   }
   
   void testEchoSSL() {
@@ -152,7 +152,7 @@ class NetTest extends GroovyTestCase {
       }
     }
     
-    assert(latch.await(5, java.util.concurrent.TimeUnit.SECONDS))
+    assert(latch.await(5.seconds))
   }
 
   void testMethods() {
@@ -232,7 +232,7 @@ class NetTest extends GroovyTestCase {
       latch.countDown()
     }
     
-    assert(latch.await(5, java.util.concurrent.TimeUnit.SECONDS))
+    assert(latch.await(5.seconds))
   }
 
 }

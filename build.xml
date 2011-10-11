@@ -39,6 +39,7 @@
 
     <property name="javadoc-dir" value="docs/java/api"/>
     <property name="rubydoc-dir" value="docs/ruby/api"/>
+    <property name="groovydoc.dir" value="docs/groovy/api"/>
 
     <path id="core-lib-classpath">
         <fileset dir="${core-lib}">
@@ -142,7 +143,21 @@
         <exec executable="yardoc"/>
     </target>
 
-    <target name="dist" depends="clean, jar-core, javadoc, yardoc">
+    <target name="groovydoc">
+        <echo>Creating Groovy Documentation</echo>
+        <taskdef resource="org/codehaus/groovy/antlib.xml" classpath="${core-lib}/groovy-all-1.8.2.jar"/>
+        <groovydoc destdir="${target}/${groovydoc.dir}"
+                   sourcepath="${core-groovy-src}"
+                   packagenames="**.*"
+                   use="true"
+                   windowtitle="Vert.x Groovy API"
+                   doctitle="Vert.x Groovy API">
+            <link packages="java.,org.xml.,javax.,org.xml." href="http://download.oracle.com/javase/7/docs/api"/>
+            <link packages="groovy.,org.codehaus.groovy."   href="http://groovy.codehaus.org/api/"/>
+        </groovydoc>
+    </target>
+
+    <target name="dist" depends="clean, jar-core, javadoc, yardoc, groovydoc">
         <mkdir dir="${dist-build}"/>
 
         <copy file="${target}/${jar-file}" todir="${dist-build}/lib/java"/>

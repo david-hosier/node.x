@@ -20,7 +20,7 @@ import org.nodex.java.core.buffer.Buffer
 
 public class Buffer {
 
-  @Delegate org.nodex.java.core.buffer.Buffer jBuffer
+  private static @Delegate org.nodex.java.core.buffer.Buffer jBuffer
 
   /**
    * Creates a nodex Java Buffer from either a String or a GString and returns it.

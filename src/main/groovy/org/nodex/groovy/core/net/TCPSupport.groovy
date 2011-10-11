@@ -18,6 +18,20 @@ package org.nodex.groovy.core.net
 
 /**
  * Mixin module that provides all the common TCP params that can be set.
+ * <p>
+ * <b>IMPORTANT NOTE:</b> The methods of this class are designed to return a handle back to the
+ * class which contain this as a Mixin. However, there is no support in Groovy at this
+ * time that can be used to make that happen. For example, returning 'this' will attempt
+ * to return the instance of the script that is currently being executed, not the instance
+ * of the class on which the Mixin annotation exists.
+ * </p>
+ * <p>
+ * This has been worked around for now by simply returning a variable named 'me' in each
+ * method. This requires the classes using this class as a mixin to provide a private
+ * class-level property named me and which has 'this' assigned to it during construction of
+ * the instance. Hopefully Groovy will implement a proper way to accomplish the needs in
+ * the near future.
+ * </p>
  */
 public class TCPSupport {
 
